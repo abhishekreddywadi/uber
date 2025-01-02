@@ -1,6 +1,7 @@
 const userModel = require("../models/user.models");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
+const blackListTokenModel = require("../models/blackListTokens.model");
 module.exports.registerUser=async(req,res)=>{
    try {
     const errors = validationResult(req);
@@ -51,11 +52,31 @@ module.exports.loginUser=async(req,res)=>{
     }
 
     const token = await user.generateJWT();
+    res.cookie("token", token, {
+        httpOnly: true,
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),});
 
     res.status(200).json({
         status:"success",
         data:user,
         token
     });
+    
+}
+module.exports.getUserProfile=async(req,res)=>{
+    res.status(200).json({
+        status:"success",
+        data:req.user
+    });
+}
+module.exports.logoutUser=async(req,res)=>{
+    res.clearCookie("token");
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    await blackListTokenModel.create({ token });
+    res.status(200).json({ message: "Logout successful" });
+
     
 }

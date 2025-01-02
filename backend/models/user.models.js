@@ -43,7 +43,7 @@ userSchema.methods.generateJWT = function () {
         throw new Error("JWT_SECRET environment variable is not set");
     }
     return jwt.sign({ id: this._id }, secret, {
-        expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+        expiresIn: process.env.JWT_EXPIRES_IN || "24h",
     });
 };
 userSchema.methods.comparePassword = async function (password) {

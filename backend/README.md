@@ -171,3 +171,104 @@ Endpoint for authenticating an existing user.
 - A JWT token is returned upon successful authentication
 - The response includes the user data (excluding password) and a JWT token
 - For security reasons, the same error message is returned whether the email doesn't exist or the password is incorrect
+
+## Get User Profile
+Endpoint for retrieving the authenticated user's profile information.
+
+**URL**: `/users/profile`
+
+**Method**: `GET`
+
+**Authentication**: Required (JWT token in cookie or Authorization header)
+
+### Headers
+```
+Cookie: token=jwt_token_string
+```
+OR
+```
+Authorization: Bearer jwt_token_string
+```
+
+### Success Response
+**Code**: `200 OK`
+
+**Content Example**:
+```json
+{
+    "status": "success",
+    "data": {
+        "fullName": {
+            "firstName": "John",
+            "lastName": "Doe"
+        },
+        "email": "john.doe@example.com",
+        "_id": "user_id",
+        "socketId": null
+    }
+}
+```
+
+### Error Response
+
+#### Unauthorized
+**Code**: `401 Unauthorized`
+
+**Content Example**:
+```json
+{
+    "message": "Unauthorized"
+}
+```
+
+## Logout User
+Endpoint for logging out the current user and invalidating their token.
+
+**URL**: `/users/logout`
+
+**Method**: `GET`
+
+**Authentication**: Required (JWT token in cookie or Authorization header)
+
+### Headers
+```
+Cookie: token=jwt_token_string
+```
+OR
+```
+Authorization: Bearer jwt_token_string
+```
+
+### Success Response
+**Code**: `200 OK`
+
+**Content Example**:
+```json
+{
+    "message": "Logout successful"
+}
+```
+
+**Effects**:
+- Clears the token cookie from the client
+- Adds the token to a blacklist to prevent reuse
+- Invalidates the current session
+
+### Error Response
+
+#### Unauthorized
+**Code**: `401 Unauthorized`
+
+**Content Example**:
+```json
+{
+    "message": "Unauthorized"
+}
+```
+
+### Notes
+- Both endpoints require authentication via JWT token
+- Token can be provided either in a cookie (recommended) or Authorization header
+- After logout, the token is blacklisted and cannot be reused
+- Cookie is set with httpOnly flag for security
+- Cookie expires in 90 days from creation
