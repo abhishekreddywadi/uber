@@ -272,3 +272,112 @@ Authorization: Bearer jwt_token_string
 - After logout, the token is blacklisted and cannot be reused
 - Cookie is set with httpOnly flag for security
 - Cookie expires in 90 days from creation
+
+# Captain Registration API Documentation
+
+## Register Captain
+Endpoint for registering a new captain in the system.
+
+**URL**: `/captain/register`
+
+**Method**: `POST`
+
+**Content-Type**: `application/json`
+
+### Request Body
+```json
+{
+    "fullName": {
+        "firstName": "string",    // minimum 3 characters, required
+        "lastName": "string"      // minimum 3 characters, required
+    },
+    "email": "string",           // valid email format, required
+    "password": "string",        // minimum 6 characters, required
+    "vehicle": {
+        "color": "string",       // minimum 3 characters, required
+        "plate": "string",       // minimum 3 characters, required
+        "capacity": "number",    // minimum value 1, required
+        "vehicleType": "string"  // must be one of: "auto", "motorcycle", "car", required
+    }
+}
+```
+
+### Example Request
+```json
+{
+    "fullName": {
+        "firstName": "John",
+        "lastName": "Driver"
+    },
+    "email": "john.driver@example.com",
+    "password": "password123",
+    "vehicle": {
+        "color": "red",
+        "plate": "MP 04 XYI 6204",
+        "capacity": 3,
+        "vehicleType": "car"
+    }
+}
+```
+
+### Success Response
+**Code**: `201 Created`
+
+**Content Example**:
+```json
+{
+    "fullName": {
+        "firstName": "John",
+        "lastName": "Driver"
+    },
+    "email": "john.driver@example.com",
+    "vehicle": {
+        "color": "red",
+        "plate": "MP 04 XYI 6204",
+        "capacity": 3,
+        "vehicleType": "car"
+    },
+    "_id": "captain_id",
+    "status": "inactive",
+    "socketId": null,
+    "createdAt": "2025-01-21T06:40:18.123Z",
+    "updatedAt": "2025-01-21T06:40:18.123Z"
+}
+```
+
+### Error Responses
+
+#### Validation Error
+**Code**: `400 Bad Request`
+
+**Content Example**:
+```json
+{
+    "errors": [
+        {
+            "msg": "Vehicle type must be either auto, motorcycle, or car",
+            "param": "vehicle.vehicleType",
+            "location": "body"
+        }
+    ]
+}
+```
+
+#### Captain Already Exists
+**Code**: `400 Bad Request`
+
+**Content Example**:
+```json
+{
+    "message": "Captain already exists"
+}
+```
+
+### Notes
+- All fields marked as required must be provided
+- Email must be unique in the system
+- Password will be hashed before storage
+- Vehicle type must be one of the allowed values: "auto", "motorcycle", "car"
+- Vehicle capacity must be a number greater than 0
+- Captain status is set to "inactive" by default
+- The response will not include the password field
