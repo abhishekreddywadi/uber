@@ -13,17 +13,24 @@ module.exports.registerUser=async(req,res)=>{
     
     const {fullName:{firstName,lastName},email,password} = req.body;
     const hashPassword = await userModel.hashPassword(password);
+    const userAlreadyExists = await userModel.findOne({email});
+    if(userAlreadyExists){
+        return res.status(400).json({
+            success:false,
+            message:"User already exists"
+        });
+    }
 
     const user = await userService.createUser({firstName,lastName,email,hashPassword});
     const token = await user.generateJWT();
     res.status(201).json({
-        status:"success",
+        success:true,
         data:user,
         token
     });
    } catch (error) {
     res.status(400).json({
-        status:"fail",
+        success:false,
         message:error.message
     });
    }
@@ -39,14 +46,14 @@ module.exports.loginUser=async(req,res)=>{
 
     if(!user){
         return res.status(401).json({
-            status:"fail",
+            success:false,
             message:"Invalid email or password"
         });
     }
     const isMatch = await user.comparePassword(password);
     if(!isMatch){
         return res.status(401).json({
-            status:"fail",
+            success:false,
             message:"Invalid email or password"
         });
     }
@@ -57,7 +64,7 @@ module.exports.loginUser=async(req,res)=>{
         expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),});
 
     res.status(200).json({
-        status:"success",
+        success:true,
         data:user,
         token
     });
@@ -65,7 +72,7 @@ module.exports.loginUser=async(req,res)=>{
 }
 module.exports.getUserProfile=async(req,res)=>{
     res.status(200).json({
-        status:"success",
+        success:true,   
         data:req.user
     });
 }
@@ -76,7 +83,6 @@ module.exports.logoutUser=async(req,res)=>{
         return res.status(401).json({ message: "Unauthorized" });
     }
     await blackListTokenModel.create({ token });
-    res.status(200).json({ message: "Logout successful" });
+    res.status(200).json({ message: "Logout successful" }); 
 
-    
 }
